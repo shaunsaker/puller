@@ -1,36 +1,33 @@
-// Define pin connections & motor's steps per revolution
+#include <Stepper.h>
+
+// puller setup
+const int stepsPerRevolution = 200; // see NEMA 17 motor specs
+const int lowSpeed = 5;
+const int highSpeed = 120;
 const int stepPin = 8;
 const int dirPin = 9;
+Stepper puller(stepsPerRevolution, stepPin, dirPin);
+
+// knob setup
 const int potPin = A0;
 int potVal = 0;
-const int stepsPerRevolution = 200; // see NEMA 17 motor specs
-const int motorDelayHigh = 500;
-const int motorDelayLow = 2000;
 
 void setup()
 {
-  Serial.begin(9600);
-
-  // Declare pins as Outputs
-  pinMode(stepPin, OUTPUT);
-  pinMode(dirPin, OUTPUT);
   pinMode(potPin, INPUT);
+
+  puller.setSpeed(lowSpeed);
+
+  Serial.begin(9600);
 }
 void loop()
 {
-  // read the potentiometer value
+
+  // get the required speed from the potentiometer
   potVal = analogRead(potPin);
-  int delay = map(potVal, 0, 1023, motorDelayLow, motorDelayHigh);
-  Serial.println(delay);
+  int requiredSpeed = map(potVal, 0, 1023, lowSpeed, highSpeed);
 
-  // Set motor direction clockwise
-  digitalWrite(dirPin, HIGH);
+  puller.setSpeed(requiredSpeed);
 
-  for (int x = 0; x < stepsPerRevolution; x++)
-  {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(delay);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(delay);
-  }
+  puller.step(stepsPerRevolution);
 }
